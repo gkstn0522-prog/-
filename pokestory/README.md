@@ -1,55 +1,47 @@
-# 포켓몬스토리 키우기
+# 왕도 탈출 (가제) — Android APK 프로젝트 틀
 
-1세대 포켓몬으로 즐기는 방치형 키우기 게임입니다. 친구들은 APK를 한 번만 설치하면 되고, 게임을 수정해서 올리면 다음 실행 때 자동으로 최신 버전이 열립니다.
+루트 무브 SRPG 전투 프로토타입을 Capacitor로 감싸 APK로 만드는 프로젝트입니다. 게임 본체는 `www/index.html` 한 파일이고, 폰 브라우저에서 그냥 열어도 그대로 돌아갑니다.
 
-## 어떻게 동작하나요
+## 들어 있는 것
 
-- **게임 본체** (`src/game.html`)는 GitHub Pages라는 무료 웹 호스팅에 올라갑니다.
-- **안드로이드 앱** (`android/`)은 그 게임 주소를 여는 껍데기입니다.
-- 그래서 게임을 고치면 GitHub에 올리기만 하면 끝이고, APK는 다시 보낼 필요가 없습니다.
-- 세이브 데이터는 각자의 폰에 저장됩니다. 업데이트해도 지워지지 않아요. (앱을 삭제하면 지워집니다)
+| 파일 | 내용 |
+| --- | --- |
+| `www/index.html` | 게임 전체: 규칙 엔진, AI, 터치 UI |
+| `capacitor.config.json` | 앱 이름, 패키지명, 배경색 |
+| `package.json` | Capacitor 의존성과 빌드 스크립트 |
 
-## 처음 한 번만 하는 설정 (약 10분)
+## 준비물
 
-1. **GitHub 가입**: https://github.com 에서 무료 계정을 만듭니다.
-2. **저장소 만들기**: 오른쪽 위 `+` → `New repository`
-   - 이름: `pokestory`
-   - **Public** 선택 (무료 계정은 공개 저장소여야 Pages를 쓸 수 있어요)
-   - `Create repository`
-3. **파일 올리기**: 이 폴더의 내용을 저장소에 올립니다.
-   - 가장 쉬운 방법: GitHub Desktop 앱 설치 → 저장소 Clone → 이 폴더 내용을 복사 → Commit → Push
-   - 웹에서 드래그로 올릴 경우 `.github` 폴더가 빠지기 쉬우니 꼭 확인하세요.
-4. **Pages 켜기**: 저장소 `Settings` → 왼쪽 `Pages` → `Source`를 **GitHub Actions**로 선택
-5. **Actions 탭**에서 두 작업이 돌아가는지 확인합니다.
-   - `게임 배포` 실행이 끝나면 게임 주소가 생깁니다: `https://내아이디.github.io/pokestory/`
-   - `APK 빌드` 실행이 끝나면 오른쪽 **Releases**에 `PokeStory-번호.apk` 파일이 올라옵니다.
-   - 처음엔 Pages를 켜기 전에 배포가 실패할 수 있어요. 4번을 한 뒤 Actions 탭에서 `게임 배포` → `Run workflow`로 다시 돌리세요.
+- Node.js 20 이상
+- Android Studio (Android SDK와 JDK가 같이 설치됨)
 
-## 친구에게 배포하기
+## APK 만들기
 
-1. Releases에서 APK 파일을 받아 카톡 등으로 보냅니다.
-2. 친구가 파일을 열면 "출처를 알 수 없는 앱" 설치 허용을 묻습니다. 허용하고 설치하면 됩니다.
-3. Play 프로텍트 경고가 뜨면 `무시하고 설치`를 누르면 됩니다. (개인이 만든 앱이라 뜨는 경고)
+1. 이 폴더에서 `npm install`
+2. `npx cap add android` — `android/` 폴더가 생깁니다
+3. 세로 고정: `android/app/src/main/AndroidManifest.xml`의 `<activity ...>` 태그에 `android:screenOrientation="portrait"` 추가
+4. `npx cap sync android`
+5. 둘 중 하나로 빌드
+   - `npx cap open android` 후 Android Studio에서 **Build → Build Bundle(s) / APK(s) → Build APK(s)**
+   - 또는 `npm run apk` → `android/app/build/outputs/apk/debug/app-debug.apk`
 
-## 게임 업데이트하기
+코드를 고친 뒤에는 `www/index.html`만 수정하고 `npx cap sync android` 후 다시 빌드하면 됩니다.
 
-- `src/game.html`을 수정해서 GitHub에 올리면 1~2분 뒤 자동 반영됩니다.
-- 친구들은 앱을 껐다 켜면 최신 버전을 받습니다.
-- 버전 확인: 게임 화면 맨 아래 `v0.1.0` (`src/game.html` 안의 `GAME_VERSION`을 올려주세요)
-- `android/` 폴더를 고쳤을 때만 새 APK가 만들어지고, 그때만 친구들에게 다시 보내면 됩니다. 같은 서명키라 덮어쓰기 설치되고 세이브도 유지됩니다.
+## 코드 구조
 
-## 폴더 구조
+`//#CORE-START` 와 `//#CORE-END` 사이가 화면과 분리된 규칙·데이터·AI입니다. 수치 조정은 여기만 보면 됩니다.
 
-```
-src/game.html          게임 본체 (여기만 고치면 됨)
-web/                   웹 배포용 부가 파일 (오프라인 실행, 아이콘)
-tools/build.js         배포용 웹페이지 생성
-android/               안드로이드 껍데기 앱
-android/keystore/      APK 서명키 (지우지 마세요, 바뀌면 덮어쓰기 설치가 안 됩니다)
-.github/workflows/     자동 배포·자동 APK 빌드 설정
-```
+| 이름 | 내용 |
+| --- | --- |
+| `CFG` | 치명타 배율, 가드 감소율, 반격·가드 상한, 마나 회복, 창 보너스, 분노 획득량, 경험치 |
+| `WEAPONS` | 무기군별 위력 계수, 기본 공격횟수, 치명타, 사거리 |
+| `SKILLS`, `SPECIALS` | 마법 스킬, 분노 필살기 |
+| `GEAR` | 장비 목록(무기·방어구·장신구) |
+| `ROSTER` | 캐릭터 능력치, 성장률, 시작 장비, 필살기, 드롭 |
+| `MAP` | 1화 맵 (`#` 벽, `E` 탈출 지점) |
 
-## 주의
+## 알아둘 점
 
-- 포켓몬 이름과 설정은 닌텐도/포켓몬 컴퍼니의 저작물입니다. 친구끼리 즐기는 비상업 용도로만 쓰고, 플레이스토어 출시나 유료화는 하지 마세요.
-- 서명키 비밀번호(`pokestory`)가 설정 파일에 들어 있습니다. 친구 배포용으로는 괜찮지만, 정식 출시할 땐 새 키를 만들어 GitHub Secrets로 옮겨야 합니다.
+- 패키지명 `com.example.royalescape`는 임시입니다. 스토어에 올리기 전에 바꾸세요.
+- 글꼴은 Google Fonts에서 불러오므로 오프라인일 때는 기본 글꼴로 보입니다. 정식 빌드에서는 글꼴 파일을 `www/`에 넣어 로컬로 불러오면 됩니다.
+- 아직 세이브가 없습니다. 다음 단계에서 `@capacitor/preferences`로 회차·레벨·장비를 저장할 예정입니다.
